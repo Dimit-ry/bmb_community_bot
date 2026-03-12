@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import aiosqlite
+import fcntl  # для файловой блокировки
+import os
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 
@@ -618,22 +620,41 @@ async def check_scheduled_messages():
 
 async def main():
     """Главная функция"""
-    await db.init()
+    # Блокировка файла для предотвращения множественных экземпляров
+    lock_file = "/tmp/bot.lock"
+    try:
+        lock_fd = open(lock_file, 'w')
+        fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        print("DEBUG: Получена блокировка, запускаем бота")
+    except (IOError, OSError):
+        print("ERROR: Бот уже запущен! Выход.")
+        return
     
-    # Настройка планировщика для проверки отложенных сообщений
-    scheduler.add_job(
-        check_scheduled_messages,
-        "interval",
-        minutes=1,
-        id="check_scheduled"
-    )
-    scheduler.start()
-    
-    # Назначаем первого администратора
-    await db.make_admin(settings.admin_id)
-    
-    logger.info("Bot started")
-    await dp.start_polling(bot)
+    try:
+        await db.init()
+        
+        # Настройка планировщика для проверки отложенных сообщений
+        scheduler.add_job(
+            check_scheduled_messages,
+            "interval",
+            minutes=1,
+            id="check_scheduled"
+        )
+        scheduler.start()
+        
+        # Назначаем первого администратора
+        await db.make_admin(settings.admin_id)
+        
+        logger.info("Bot started")
+        await dp.start_polling(bot)
+    finally:
+        # Освобождаем блокировку
+        try:
+            fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
+            lock_fd.close()
+            os.unlink(lock_file)
+        except:
+            pass
 
 
 if __name__ == "__main__":
