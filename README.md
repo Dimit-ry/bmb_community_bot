@@ -102,13 +102,48 @@ telegram-reminder-bot/
 - `/start` - Начать работу с ботом
 - `/admin` - Панель администратора (только для админов)
 
-## Развертывание на bothostru
+## 🚀 Развертывание на хостинге
 
-1. Убедитесь, что у вас установлен Docker
-2. Склонируйте репозиторий на сервер
-3. Настройте `.env` файл с вашими токенами
-4. Запустите `docker-compose up -d`
-5. Проверьте работу бота через Telegram
+### Быстрый деплой через Railway (рекомендуется)
+
+1. **Подключите GitHub к Railway:**
+   - Зайдите на [railway.app](https://railway.app)
+   - Нажмите "Deploy from GitHub repo"
+   - Выберите репозиторий `bmb_community_bot`
+
+2. **Настройте переменные окружения:**
+   В Railway Settings → Variables добавьте:
+   ```
+   BOT_TOKEN=8794012246:AAEATYMVG-ITc3X1y9JoGAM27M85ImR1j70
+   ADMIN_ID=420366725
+   DATABASE_PATH=bot.db
+   ```
+
+3. **Запустите деплой:**
+   - Railway автоматически определит Python проект
+   - Установит зависимости из `requirements.txt`
+   - Запустит бота через `Procfile`
+
+### Альтернативные хостинги
+
+**Render:**
+- Аналогично Railway через GitHub integration
+- Variables: `BOT_TOKEN`, `ADMIN_ID`, `DATABASE_PATH`
+
+**Heroku:**
+- Создайте приложение через Heroku CLI
+- Установите переменные: `heroku config:set BOT_TOKEN=...`
+
+### Docker деплой
+
+```bash
+# Сборка и запуск
+docker-compose up -d
+
+# Или на сервере:
+docker build -t telegram-bot .
+docker run -d --env-file .env telegram-bot
+```
 
 ## Поддержка
 

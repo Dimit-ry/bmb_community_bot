@@ -119,10 +119,12 @@ class Database:
                           media_type: str = None, scheduled_at: datetime = None) -> int:
         """Сохранение сообщения для рассылки"""
         async with aiosqlite.connect(self.db_path) as db:
+            # Если указано время планирования, статус pending, иначе sent
+            status = 'pending' if scheduled_at else 'sent'
             cursor = await db.execute("""
-                INSERT INTO messages (text, media_path, media_type, scheduled_at)
-                VALUES (?, ?, ?, ?)
-            """, (text, media_path, media_type, scheduled_at))
+                INSERT INTO messages (text, media_path, media_type, status, scheduled_at)
+                VALUES (?, ?, ?, ?, ?)
+            """, (text, media_path, media_type, status, scheduled_at))
             await db.commit()
             return cursor.lastrowid
     
