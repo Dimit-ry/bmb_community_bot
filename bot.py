@@ -428,79 +428,7 @@ async def handle_text_messages(message: Message):
             await message.answer("🔐 Используйте команду /admin для доступа к панели управления.", reply_markup=get_admin_menu())
         else:
             # Обработка кнопок меню пользователя
-            if message.text == "📊 Последние 10 событий":
-                from utils import truncate_text, escape_markdown
-                
-                print("DEBUG: Запрашиваем статистику последних событий (пользователь)...")
-                stats = await db.get_last_events_stats()
-                print(f"DEBUG: Получено {len(stats)} сообщений")
-                
-                if not stats:
-                    text = "📊 Последние события:\n\n"
-                    text += "❌ Пока нет отправленных сообщений"
-                else:
-                    text = "📊 Последние события:\n\n"
-                    
-                    for i, message in enumerate(stats[:10], 1):
-                        print(f"DEBUG: Обработка сообщения {i}: {message}")
-                        
-                        # Форматируем дату отправки
-                        sent_date = message['sent_at']
-                        if sent_date:
-                            try:
-                                from datetime import datetime
-                                if isinstance(sent_date, str):
-                                    dt = datetime.fromisoformat(sent_date.replace('Z', '+00:00'))
-                                else:
-                                    dt = sent_date
-                                date_str = dt.strftime("%d.%m.%Y %H:%M")
-                            except:
-                                date_str = str(sent_date)
-                        else:
-                            date_str = "N/A"
-                        
-                        # Получаем первую строку текста и очищаем от HTML
-                        import re
-                        first_line = message['text'].split('\n')[0] if message['text'] else 'Без текста'
-                        # Удаляем HTML теги
-                        first_line = re.sub(r'<[^>]+>', '', first_line)
-                        first_line = truncate_text(first_line.strip(), 50)
-                        
-                        text += f"{first_line}\n"
-                        text += f"📅 {date_str}\n"
-                        
-                        # Добавляем ответы
-                        if message['responses']:
-                            response_count = len(message['responses'])
-                            if response_count == 1:
-                                text += f"✅ {response_count} ответ\n"
-                            else:
-                                text += f"✅ {response_count} ответа\n"
-                            
-                            # Показываем первые 3 ответа
-                            for response in message['responses'][:3]:
-                                username = response['username'] or "No username"
-                                resp_type = response['response_type']
-                                
-                                response_emoji = {
-                                    "will_come": "Приду",
-                                    "thinking": "Думаю", 
-                                    "wont_come": "Не смогу"
-                                }.get(resp_type, resp_type)
-                                
-                                text += f"   • @{username}: {response_emoji}\n"
-                        else:
-                            text += "📭 Нет ответов\n"
-                        
-                        text += "\n"
-                
-                print(f"DEBUG: Текст статистики готов, длина: {len(text)}")
-                # Получаем актуальный статус подписки
-                user_info = await db.get_user_by_telegram_id(user_id)
-                is_subscribed = user_info.get('is_subscribed', False) if user_info else False
-                await message.answer(text, parse_mode=None, reply_markup=get_user_menu(is_subscribed))
-                
-            elif message.text == "🔔 Подписаться на рассылку":
+            if message.text == " Подписаться на рассылку":
                 new_status = await db.toggle_subscription(user_id)
                 if new_status:
                     await message.answer("✅ Вы подписались на рассылку", reply_markup=get_user_menu(True))
@@ -518,7 +446,7 @@ async def handle_text_messages(message: Message):
                 # Другие сообщения от пользователей
                 user_info = await db.get_user_by_telegram_id(user_id)
                 is_subscribed = user_info.get('is_subscribed', False) if user_info else False
-                await message.answer("💬 Используйте меню для управления подпиской и просмотра статистики.", reply_markup=get_user_menu(is_subscribed))
+                await message.answer("💬 Используйте меню для управления подпиской.", reply_markup=get_user_menu(is_subscribed))
 
 
 @dp.callback_query(F.data.startswith("broadcast:"))

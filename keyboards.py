@@ -28,7 +28,6 @@ def get_user_menu(is_subscribed: bool = True) -> ReplyKeyboardMarkup:
     if is_subscribed:
         keyboard = ReplyKeyboardMarkup(
             keyboard=[
-                [KeyboardButton(text=" Последние 10 событий")],
                 [KeyboardButton(text="❌ Отписаться от рассылки")]
             ],
             resize_keyboard=True,
