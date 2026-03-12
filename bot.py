@@ -61,7 +61,7 @@ async def cmd_start(message: Message):
     
     # Проверяем, является ли пользователь администратором
     is_admin = await db.is_admin(user_id)
-    print(f"DEBUG: is_admin={is_admin}")
+    print(f"DEBUG: user_id={user_id}, admin_id={settings.admin_id}, is_admin={is_admin}")
     
     if is_admin:
         welcome_text = (
@@ -74,7 +74,7 @@ async def cmd_start(message: Message):
         welcome_text = (
             f"👋 Добро пожаловать, {first_name}!\n\n"
             f"Я бот для напоминаний о событиях.\n"
-            f"Вы будете получать уведомления.\n\n"
+            f"Вы будете получать уведомления и сможете отметить свое присутствие.\n\n"
             f"Используйте меню ниже для управления подпиской."
         )
         # Получаем статус подписки пользователя
