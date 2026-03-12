@@ -494,17 +494,29 @@ async def handle_text_messages(message: Message):
                 print(f"DEBUG: Нажата кнопка подписки пользователем {user_id}")
                 new_status = await db.toggle_subscription(user_id)
                 print(f"DEBUG: Результат toggle_subscription: {new_status}")
-                if new_status:
+                
+                # Получаем актуальный статус из базы
+                user_info = await db.get_user_info_by_telegram_id(user_id)
+                actual_status = user_info.get('is_subscribed', False) if user_info else False
+                print(f"DEBUG: Актуальный статус в базе: {actual_status}")
+                
+                if actual_status:
                     await message.answer("✅ Вы подписались на рассылку", reply_markup=get_user_menu(True))
                 else:
                     await message.answer("❌ Ошибка подписки", reply_markup=get_user_menu(False))
                     
             elif message.text == "❌ Отписаться от рассылки":
                 new_status = await db.toggle_subscription(user_id)
-                # new_status = False если отписались, True если остались подписаны
+                print(f"DEBUG: toggle_subscription вернул {new_status}")
+                
+                # Получаем актуальный статус из базы
+                user_info = await db.get_user_info_by_telegram_id(user_id)
+                actual_status = user_info.get('is_subscribed', False) if user_info else False
+                print(f"DEBUG: Актуальный статус в базе: {actual_status}")
+                
                 await message.answer(
-                    "❌ Вы отписались от рассылки" if not new_status else "✅ Вы остались подписаны",
-                    reply_markup=get_user_menu(not new_status)  # Показываем противоположный статус
+                    "❌ Вы отписались от рассылки" if not actual_status else "✅ Вы остались подписаны",
+                    reply_markup=get_user_menu(actual_status)
                 )
                 
             else:
