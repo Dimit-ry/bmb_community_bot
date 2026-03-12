@@ -6,7 +6,7 @@ from typing import Optional
 class Settings(BaseSettings):
     bot_token: str
     admin_id: int
-    database_path: str = "bot.db"
+    database_path: str = "/app/data/bot.db"  # Railway persistent storage
     
     class Config:
         env_file = ".env"
@@ -17,7 +17,11 @@ if os.path.exists(".env"):
     from dotenv import load_dotenv
     load_dotenv()
 
-settings = Settings()
+# Для локальной разработки используем локальный путь
+if os.path.exists(".env"):
+    settings = Settings(database_path="bot.db")
+else:
+    settings = Settings()
 
 # Отладка - выводим загруженные значения
 print(f"DEBUG: BOT_TOKEN={settings.bot_token[:10]}...")

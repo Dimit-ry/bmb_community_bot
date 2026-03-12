@@ -1,5 +1,5 @@
 import aiosqlite
-import asyncio
+import os
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from config import settings
@@ -11,10 +11,16 @@ class Database:
     
     async def init(self):
         """Инициализация базы данных"""
+        # Создаем директорию для базы данных, если ее нет
+        db_dir = os.path.dirname(self.db_path)
+        if db_dir and not os.path.exists(db_dir):
+            os.makedirs(db_dir, exist_ok=True)
+            print(f"DEBUG: Создана директория {db_dir}")
+        
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
                 CREATE TABLE IF NOT EXISTS users (
-                    id INTEGER PRIMARY KEY,
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     telegram_id INTEGER UNIQUE,
                     username TEXT,
                     first_name TEXT,

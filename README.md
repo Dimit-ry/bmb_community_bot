@@ -116,7 +116,7 @@ telegram-reminder-bot/
    ```
    BOT_TOKEN=8794012246:AAEATYMVG-ITc3X1y9JoGAM27M85ImR1j70
    ADMIN_ID=420366725
-   DATABASE_PATH=bot.db
+   DATABASE_PATH=/app/data/bot.db
    ```
 
 3. **Запустите деплой:**
@@ -128,11 +128,11 @@ telegram-reminder-bot/
 
 **Render:**
 - Аналогично Railway через GitHub integration
-- Variables: `BOT_TOKEN`, `ADMIN_ID`, `DATABASE_PATH`
+- Variables: `BOT_TOKEN`, `ADMIN_ID`, `DATABASE_PATH=/app/data/bot.db`
 
 **Heroku:**
 - Создайте приложение через Heroku CLI
-- Установите переменные: `heroku config:set BOT_TOKEN=...`
+- Установите переменные: `heroku config:set BOT_TOKEN=... DATABASE_PATH=/app/data/bot.db`
 
 ### Docker деплой
 
