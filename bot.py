@@ -93,8 +93,13 @@ async def cmd_start(message: Message):
         print("DEBUG: /start обработан успешно")
         
     except Exception as e:
+        import traceback
         print(f"ERROR в /start: {e}")
-        await message.answer("❌ Произошла ошибка. Попробуйте позже.")
+        print(f"TRACEBACK: {traceback.format_exc()}")
+        try:
+            await message.answer(f"❌ Произошла ошибка: {str(e)}")
+        except:
+            print("ERROR: Не удалось даже отправить сообщение об ошибке")
 
 
 @dp.message(Command("admin"))
