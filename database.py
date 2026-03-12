@@ -86,6 +86,19 @@ class Database:
                 result = await cursor.fetchone()
                 return result[0] if result else None
     
+    async def update_phone_number(self, telegram_id: int, phone_number: str) -> bool:
+        """Обновление номера телефона пользователя"""
+        async with aiosqlite.connect(self.db_path) as db:
+            try:
+                await db.execute(
+                    "UPDATE users SET phone_number = ? WHERE telegram_id = ?", 
+                    (phone_number, telegram_id)
+                )
+                await db.commit()
+                return True
+            except:
+                return False
+    
     async def is_admin(self, telegram_id: int) -> bool:
         """Проверка, является ли пользователь администратором"""
         async with aiosqlite.connect(self.db_path) as db:

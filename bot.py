@@ -6,7 +6,7 @@ from typing import Optional, List, Dict, Any
 
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.filters import Command, CommandStart
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, ReplyKeyboardRemove
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, ReplyKeyboardRemove, Contact
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -105,6 +105,36 @@ async def cmd_start(message: Message):
             await message.answer(f"❌ Произошла ошибка: {str(e)}")
         except:
             print("ERROR: Не удалось даже отправить сообщение об ошибке")
+
+
+@dp.message(F.contact)
+async def handle_contact(message: Message):
+    """Обработка поделенного контакта"""
+    try:
+        contact = message.contact
+        user_id = message.from_user.id
+        
+        print(f"DEBUG: Получен контакт от user_id={user_id}")
+        print(f"DEBUG: contact.user_id={contact.user_id}, phone={contact.phone_number}")
+        
+        # Проверяем, что контакт принадлежит пользователю
+        if contact.user_id == user_id:
+            # Сохраняем номер телефона
+            success = await db.update_phone_number(user_id, contact.phone_number)
+            
+            if success:
+                await message.answer(
+                    f"✅ Спасибо! Ваш номер телефона {contact.phone_number} сохранен.",
+                    reply_markup=get_user_menu(True)  # Показываем меню с подпиской
+                )
+            else:
+                await message.answer("❌ Ошибка сохранения номера телефона")
+        else:
+            await message.answer("❌ Пожалуйста, поделитесь СВОИМ контактом")
+            
+    except Exception as e:
+        print(f"ERROR в обработке контакта: {e}")
+        await message.answer("❌ Ошибка обработки контакта")
 
 
 @dp.message(Command("admin"))
@@ -464,7 +494,7 @@ async def handle_text_messages(message: Message):
                 if not new_status:
                     await message.answer("❌ Вы отписались от рассылки", reply_markup=get_user_menu(False))
                 else:
-                    await message.answer("✅ Вы подписаны на рассылку", reply_markup=get_user_menu(True))
+                    await message.answer("✅ Вы остались подписаны", reply_markup=get_user_menu(True))
                 
             else:
                 # Другие сообщения от пользователей
