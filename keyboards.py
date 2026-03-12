@@ -23,16 +23,27 @@ def get_admin_menu() -> InlineKeyboardMarkup:
     return builder.as_markup()
 
 
-def get_user_menu() -> ReplyKeyboardMarkup:
+def get_user_menu(is_subscribed: bool = True) -> ReplyKeyboardMarkup:
     """Меню пользователя"""
-    keyboard = ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text=" Настройки уведомлений")],
-            [KeyboardButton(text="❌ Отписаться от рассылки")]
-        ],
-        resize_keyboard=True,
-        input_field_placeholder="Выберите действие..."
-    )
+    if is_subscribed:
+        keyboard = ReplyKeyboardMarkup(
+            keyboard=[
+                [KeyboardButton(text="🔔 Настройки уведомлений")],
+                [KeyboardButton(text="📊 Последние 10 событий")],
+                [KeyboardButton(text="❌ Отписаться от рассылки")]
+            ],
+            resize_keyboard=True,
+            input_field_placeholder="Выберите действие..."
+        )
+    else:
+        keyboard = ReplyKeyboardMarkup(
+            keyboard=[
+                [KeyboardButton(text="🔔 Подписаться на рассылку")],
+                [KeyboardButton(text="📊 Последние 10 событий")]
+            ],
+            resize_keyboard=True,
+            input_field_placeholder="Выберите действие..."
+        )
     return keyboard
 
 
