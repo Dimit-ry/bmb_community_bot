@@ -80,7 +80,16 @@ class Database:
                 VALUES (?, ?, ?, ?, ?)
             """, (telegram_id, username, first_name, last_name, phone))
             await db.commit()
-            return cursor.lastrowid or await self.get_user_by_telegram_id(telegram_id)
+            
+            result_id = cursor.lastrowid
+            if not result_id:
+                # Пользователь уже существовал, получаем его ID
+                result_id = await self.get_user_by_telegram_id(telegram_id)
+                print(f"DEBUG: Пользователь {telegram_id} уже существовал, ID={result_id}")
+            else:
+                print(f"DEBUG: Новый пользователь {telegram_id} добавлен с ID={result_id}")
+            
+            return result_id
     
     async def get_user_by_telegram_id(self, telegram_id: int) -> Optional[int]:
         """Получение ID пользователя по telegram_id"""
@@ -258,20 +267,26 @@ class Database:
     async def toggle_subscription(self, telegram_id: int) -> bool:
         """Переключение статуса подписки"""
         async with aiosqlite.connect(self.db_path) as db:
+            # Сначала проверяем, есть ли пользователь
             async with db.execute(
                 "SELECT is_subscribed FROM users WHERE telegram_id = ?", 
                 (telegram_id,)
             ) as cursor:
                 result = await cursor.fetchone()
                 if not result:
+                    print(f"DEBUG: Пользователь {telegram_id} не найден в базе при toggle_subscription")
                     return False
                 
-                new_status = not result[0]
+                current_status = result[0]
+                new_status = not current_status
+                print(f"DEBUG: Переключение подписки для {telegram_id}: {current_status} -> {new_status}")
+                
                 await db.execute(
                     "UPDATE users SET is_subscribed = ? WHERE telegram_id = ?", 
                     (new_status, telegram_id)
                 )
                 await db.commit()
+                print(f"DEBUG: Статус подписки обновлен для {telegram_id}")
                 return new_status
     
     async def record_delivery(self, message_id: int, user_id: int):

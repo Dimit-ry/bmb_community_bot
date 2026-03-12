@@ -491,7 +491,9 @@ async def handle_text_messages(message: Message):
         else:
             # Обработка кнопок меню пользователя
             if message.text == "🔔 Подписаться на рассылку":
+                print(f"DEBUG: Нажата кнопка подписки пользователем {user_id}")
                 new_status = await db.toggle_subscription(user_id)
+                print(f"DEBUG: Результат toggle_subscription: {new_status}")
                 if new_status:
                     await message.answer("✅ Вы подписались на рассылку", reply_markup=get_user_menu(True))
                 else:
