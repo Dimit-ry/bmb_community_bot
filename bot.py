@@ -42,46 +42,59 @@ broadcast_state = BroadcastState()
 @dp.message(CommandStart())
 async def cmd_start(message: Message):
     """Обработка команды /start"""
-    user_id = message.from_user.id
-    username = message.from_user.username or ""
-    first_name = message.from_user.first_name or ""
-    last_name = message.from_user.last_name or ""
-    
-    # Отладка
-    print(f"DEBUG: /start от user_id={user_id}, admin_id={settings.admin_id}")
-    print(f"DEBUG: Сравнение: {user_id} == {settings.admin_id} = {user_id == settings.admin_id}")
-    
-    # Добавляем пользователя в базу
-    await db.add_user(user_id, username, first_name, last_name)
-    
-    # Назначаем администратором, если это ID из конфига
-    if user_id == settings.admin_id:
-        print(f"DEBUG: Назначаем администратором user_id={user_id}")
-        await db.make_admin(user_id)
-    
-    # Проверяем, является ли пользователь администратором
-    is_admin = await db.is_admin(user_id)
-    print(f"DEBUG: is_admin={is_admin}")
-    
-    # Получаем статус подписки
-    user_info = await db.get_user_by_telegram_id(user_id)
-    is_subscribed = user_info.get('is_subscribed', False) if user_info else False
-    
-    if is_admin:
-        welcome_text = (
-            f"👋 Добро пожаловать, {first_name}!\n\n"
-            f"🔐 Вы вошли как администратор\n"
-            f"Используйте команду /admin для доступа к панели управления."
-        )
-        await message.answer(welcome_text)
-    else:
-        welcome_text = (
-            f"👋 Добро пожаловать, {first_name}!\n\n"
-            f"Я бот для напоминаний о событиях.\n"
-            f"Вы будете получать уведомления и сможете отметить свое присутствие.\n\n"
-            f"Используйте меню ниже для управления подпиской."
-        )
-        await message.answer(welcome_text, reply_markup=get_user_menu(is_subscribed))
+    try:
+        print(f"DEBUG: Получен /start от {message.from_user.id} (@{message.from_user.username})")
+        
+        user_id = message.from_user.id
+        username = message.from_user.username or ""
+        first_name = message.from_user.first_name or ""
+        last_name = message.from_user.last_name or ""
+        
+        # Отладка
+        print(f"DEBUG: /start от user_id={user_id}, admin_id={settings.admin_id}")
+        print(f"DEBUG: Сравнение: {user_id} == {settings.admin_id} = {user_id == settings.admin_id}")
+        
+        # Добавляем пользователя в базу
+        await db.add_user(user_id, username, first_name, last_name)
+        print("DEBUG: Пользователь добавлен в базу")
+        
+        # Назначаем администратором, если это ID из конфига
+        if user_id == settings.admin_id:
+            print(f"DEBUG: Назначаем администратором user_id={user_id}")
+            await db.make_admin(user_id)
+        
+        # Проверяем, является ли пользователь администратором
+        is_admin = await db.is_admin(user_id)
+        print(f"DEBUG: is_admin={is_admin}")
+        
+        # Получаем статус подписки
+        user_info = await db.get_user_by_telegram_id(user_id)
+        is_subscribed = user_info.get('is_subscribed', False) if user_info else False
+        print(f"DEBUG: is_subscribed={is_subscribed}")
+        
+        if is_admin:
+            welcome_text = (
+                f"👋 Добро пожаловать, {first_name}!\n\n"
+                f"🔐 Вы вошли как администратор\n"
+                f"Используйте команду /admin для доступа к панели управления."
+            )
+            print("DEBUG: Отправляем приветствие админу")
+            await message.answer(welcome_text)
+        else:
+            welcome_text = (
+                f"👋 Добро пожаловать, {first_name}!\n\n"
+                f"Я бот для напоминаний о событиях.\n"
+                f"Вы будете получать уведомления и сможете отметить свое присутствие.\n\n"
+                f"Используйте меню ниже для управления подпиской."
+            )
+            print("DEBUG: Отправляем приветствие пользователю")
+            await message.answer(welcome_text, reply_markup=get_user_menu(is_subscribed))
+            
+        print("DEBUG: /start обработан успешно")
+        
+    except Exception as e:
+        print(f"ERROR в /start: {e}")
+        await message.answer("❌ Произошла ошибка. Попробуйте позже.")
 
 
 @dp.message(Command("admin"))
