@@ -501,7 +501,11 @@ async def handle_text_messages(message: Message):
                 print(f"DEBUG: Актуальный статус в базе: {actual_status}")
                 
                 if actual_status:
-                    await message.answer("✅ Вы подписались на рассылку", reply_markup=get_user_menu(True))
+                    # Сначала убираем старую клавиатуру
+                    await message.answer("✅ Вы подписались на рассылку", reply_markup=ReplyKeyboardRemove())
+                    # Затем отправляем новую
+                    await asyncio.sleep(0.5)
+                    await message.answer("🔄 Меню обновлено", reply_markup=get_user_menu(True))
                 else:
                     await message.answer("❌ Ошибка подписки", reply_markup=get_user_menu(False))
                     
@@ -521,8 +525,16 @@ async def handle_text_messages(message: Message):
                 actual_status = user_info_after.get('is_subscribed', False) if user_info_after else False
                 print(f"DEBUG: Статус ПОСЛЕ отписки в базе: {actual_status}")
                 
+                # Сначала убираем старую клавиатуру
                 await message.answer(
                     "❌ Вы отписались от рассылки" if not actual_status else "✅ Вы остались подписаны",
+                    reply_markup=ReplyKeyboardRemove()
+                )
+                
+                # Затем отправляем новую клавиатуру с задержкой
+                await asyncio.sleep(0.5)
+                await message.answer(
+                    "🔄 Меню обновлено",
                     reply_markup=get_user_menu(actual_status)
                 )
                 print(f"DEBUG: Показали меню со статусом: {actual_status}")
