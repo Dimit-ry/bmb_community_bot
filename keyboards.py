@@ -25,6 +25,7 @@ def get_admin_menu() -> InlineKeyboardMarkup:
 
 def get_user_menu(is_subscribed: bool = True) -> ReplyKeyboardMarkup:
     """Меню пользователя"""
+    print(f"DEBUG: get_user_menu вызван с is_subscribed={is_subscribed}")
     if is_subscribed:
         keyboard = ReplyKeyboardMarkup(
             keyboard=[
@@ -34,6 +35,7 @@ def get_user_menu(is_subscribed: bool = True) -> ReplyKeyboardMarkup:
             resize_keyboard=True,
             input_field_placeholder="Выберите действие..."
         )
+        print("DEBUG: Создано меню для подписанного пользователя (кнопка Отписаться)")
     else:
         keyboard = ReplyKeyboardMarkup(
             keyboard=[
@@ -43,6 +45,7 @@ def get_user_menu(is_subscribed: bool = True) -> ReplyKeyboardMarkup:
             resize_keyboard=True,
             input_field_placeholder="Выберите действие..."
         )
+        print("DEBUG: Создано меню для неподписанного пользователя (кнопка Подписаться)")
     return keyboard
 
 

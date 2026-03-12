@@ -506,18 +506,26 @@ async def handle_text_messages(message: Message):
                     await message.answer("❌ Ошибка подписки", reply_markup=get_user_menu(False))
                     
             elif message.text == "❌ Отписаться от рассылки":
+                print(f"DEBUG: Нажата кнопка ОТПИСКИ пользователем {user_id}")
+                
+                # Сначала получаем статус ДО изменения
+                user_info_before = await db.get_user_info_by_telegram_id(user_id)
+                status_before = user_info_before.get('is_subscribed', False) if user_info_before else False
+                print(f"DEBUG: Статус ДО отписки: {status_before}")
+                
                 new_status = await db.toggle_subscription(user_id)
                 print(f"DEBUG: toggle_subscription вернул {new_status}")
                 
                 # Получаем актуальный статус из базы
-                user_info = await db.get_user_info_by_telegram_id(user_id)
-                actual_status = user_info.get('is_subscribed', False) if user_info else False
-                print(f"DEBUG: Актуальный статус в базе: {actual_status}")
+                user_info_after = await db.get_user_info_by_telegram_id(user_id)
+                actual_status = user_info_after.get('is_subscribed', False) if user_info_after else False
+                print(f"DEBUG: Статус ПОСЛЕ отписки в базе: {actual_status}")
                 
                 await message.answer(
                     "❌ Вы отписались от рассылки" if not actual_status else "✅ Вы остались подписаны",
                     reply_markup=get_user_menu(actual_status)
                 )
+                print(f"DEBUG: Показали меню со статусом: {actual_status}")
                 
             else:
                 # Другие сообщения от пользователей
