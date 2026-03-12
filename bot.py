@@ -69,7 +69,12 @@ async def cmd_start(message: Message):
         
         # Получаем статус подписки
         user_info = await db.get_user_by_telegram_id(user_id)
-        is_subscribed = user_info.get('is_subscribed', False) if user_info else False
+        print(f"DEBUG: user_info={user_info}, type={type(user_info)}")
+        
+        if user_info and isinstance(user_info, dict):
+            is_subscribed = user_info.get('is_subscribed', False)
+        else:
+            is_subscribed = False
         print(f"DEBUG: is_subscribed={is_subscribed}")
         
         if is_admin:
@@ -464,7 +469,10 @@ async def handle_text_messages(message: Message):
             else:
                 # Другие сообщения от пользователей
                 user_info = await db.get_user_by_telegram_id(user_id)
-                is_subscribed = user_info.get('is_subscribed', False) if user_info else False
+                if user_info and isinstance(user_info, dict):
+                    is_subscribed = user_info.get('is_subscribed', False)
+                else:
+                    is_subscribed = False
                 await message.answer("💬 Используйте меню для управления подпиской.", reply_markup=get_user_menu(is_subscribed))
 
 
