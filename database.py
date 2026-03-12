@@ -91,12 +91,13 @@ class Database:
         async with aiosqlite.connect(self.db_path) as db:
             try:
                 await db.execute(
-                    "UPDATE users SET phone_number = ? WHERE telegram_id = ?", 
+                    "UPDATE users SET phone = ? WHERE telegram_id = ?", 
                     (phone_number, telegram_id)
                 )
                 await db.commit()
                 return True
-            except:
+            except Exception as e:
+                print(f"ERROR updating phone: {e}")
                 return False
     
     async def is_admin(self, telegram_id: int) -> bool:

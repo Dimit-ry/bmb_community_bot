@@ -123,9 +123,16 @@ async def handle_contact(message: Message):
             success = await db.update_phone_number(user_id, contact.phone_number)
             
             if success:
+                # Получаем актуальный статус подписки
+                user_info = await db.get_user_by_telegram_id(user_id)
+                if user_info and isinstance(user_info, dict):
+                    is_subscribed = user_info.get('is_subscribed', False)
+                else:
+                    is_subscribed = False
+                    
                 await message.answer(
                     f"✅ Спасибо! Ваш номер телефона {contact.phone_number} сохранен.",
-                    reply_markup=get_user_menu(True)  # Показываем меню с подпиской
+                    reply_markup=get_user_menu(is_subscribed)
                 )
             else:
                 await message.answer("❌ Ошибка сохранения номера телефона")
