@@ -501,12 +501,12 @@ async def handle_text_messages(message: Message):
                 print(f"DEBUG: Актуальный статус в базе: {actual_status}")
                 
                 if actual_status:
-                    # Сначала убираем старую клавиатуру
+                    # Успешная подписка
                     await message.answer("✅ Вы подписались на рассылку", reply_markup=ReplyKeyboardRemove())
-                    # Затем отправляем новую
                     await asyncio.sleep(0.5)
                     await message.answer("🔄 Меню обновлено", reply_markup=get_user_menu(True))
                 else:
+                    # Ошибка - пользователь не подписался
                     await message.answer("❌ Ошибка подписки", reply_markup=get_user_menu(False))
                     
             elif message.text == "❌ Отписаться от рассылки":
