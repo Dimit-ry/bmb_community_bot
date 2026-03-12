@@ -643,7 +643,13 @@ async def main():
         scheduler.start()
         
         # Назначаем первого администратора
-        await db.make_admin(settings.admin_id)
+        print(f"DEBUG: Назначаем администратора telegram_id={settings.admin_id}")
+        admin_result = await db.make_admin(settings.admin_id)
+        print(f"DEBUG: Результат назначения админа: {admin_result}")
+        
+        # Проверяем статус администратора
+        is_admin_after = await db.is_admin(settings.admin_id)
+        print(f"DEBUG: Проверка статуса админа после назначения: {is_admin_after}")
         
         logger.info("Bot started")
         await dp.start_polling(bot)

@@ -119,12 +119,30 @@ class Database:
     async def make_admin(self, telegram_id: int) -> bool:
         """Назначение пользователя администратором"""
         async with aiosqlite.connect(self.db_path) as db:
+            # Сначала проверяем, есть ли пользователь
             cursor = await db.execute(
-                "UPDATE users SET is_admin = 1 WHERE telegram_id = ?", 
+                "SELECT id FROM users WHERE telegram_id = ?", 
                 (telegram_id,)
             )
+            user_exists = await cursor.fetchone()
+            
+            if not user_exists:
+                # Если пользователя нет, создаем его
+                await db.execute(
+                    "INSERT INTO users (telegram_id, username, first_name, last_name, is_admin) VALUES (?, ?, ?, ?, 1)",
+                    (telegram_id, "admin", "Admin", "")
+                )
+                print(f"DEBUG: Создан администратор telegram_id={telegram_id}")
+            else:
+                # Если пользователь есть, обновляем статус
+                cursor = await db.execute(
+                    "UPDATE users SET is_admin = 1 WHERE telegram_id = ?", 
+                    (telegram_id,)
+                )
+                print(f"DEBUG: Обновлен статус администратора для telegram_id={telegram_id}, rowcount={cursor.rowcount}")
+            
             await db.commit()
-            return cursor.rowcount > 0
+            return True
     
     async def get_subscribers(self) -> List[Dict[str, Any]]:
         """Получение всех подписчиков"""
