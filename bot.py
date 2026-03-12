@@ -664,13 +664,22 @@ async def main():
     """Главная функция"""
     # Блокировка файла для предотвращения множественных экземпляров
     lock_file = "/tmp/bot.lock"
-    try:
-        lock_fd = open(lock_file, 'w')
-        fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        print("DEBUG: Получена блокировка, запускаем бота")
-    except (IOError, OSError):
-        print("ERROR: Бот уже запущен! Выход.")
-        return
+    max_retries = 5
+    retry_delay = 2
+    
+    for attempt in range(max_retries):
+        try:
+            lock_fd = open(lock_file, 'w')
+            fcntl.flock(lock_fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            print(f"DEBUG: Получена блокировка (попытка {attempt + 1}), запускаем бота")
+            break
+        except (IOError, OSError) as e:
+            if attempt == max_retries - 1:
+                print(f"ERROR: Не удалось получить блокировку после {max_retries} попыток. Выход.")
+                return
+            print(f"WARNING: Бот уже запущен, попытка {attempt + 1}/{max_retries}. Ждем {retry_delay} сек...")
+            await asyncio.sleep(retry_delay)
+            retry_delay *= 2  # Увеличиваем задержку
     
     try:
         await db.init()
@@ -701,6 +710,7 @@ async def main():
             fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
             lock_fd.close()
             os.unlink(lock_file)
+            print("DEBUG: Блокировка освобождена")
         except:
             pass
 
