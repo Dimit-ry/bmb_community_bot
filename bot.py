@@ -18,7 +18,7 @@ from config import settings
 from database import db
 from keyboards import (
     get_response_buttons, get_admin_menu, get_user_menu, 
-    get_stats_menu, get_broadcast_options, get_confirmation_buttons, get_back_button
+    get_stats_menu, get_broadcast_options, get_broadcast_timing_options, get_confirmation_buttons, get_back_button
 )
 
 
@@ -29,8 +29,7 @@ class BroadcastState:
     """Состояния для создания рассылки"""
     def __init__(self):
         self.pending_messages = {}
-        self.user_states = {}
-
+        self.user_states = {}  # {user_id: {text: str, media_path: str, media_type: str, with_buttons: bool}}
 
 bot = Bot(
     token=settings.bot_token,
@@ -264,11 +263,11 @@ async def handle_admin_callbacks(callback: CallbackQuery):
         await callback.message.edit_text(text, reply_markup=get_back_button())
     
     elif action == "create_broadcast":
-        broadcast_state.user_states[callback.from_user.id] = {"step": "text"}
+        broadcast_state.user_states[callback.from_user.id] = {"step": "type_selection"}
         await callback.message.edit_text(
             "📤 Создание рассылки\n\n"
-            "Отправьте текст для рассылки (можно использовать HTML форматирование и гиперссылки):",
-            reply_markup=get_back_button()
+            "Выберите тип рассылки:",
+            reply_markup=get_broadcast_options()
         )
     
     elif action == "make_admin":
@@ -393,12 +392,12 @@ async def handle_text_messages(message: Message):
             if state["step"] == "text":
                 # Сохраняем текст рассылки
                 state["text"] = message.html_text
-                state["step"] = "confirm"
+                state["step"] = "timing"
                 
                 await message.answer(
                     f"📤 Текст рассылки сохранен:\n\n{message.html_text}\n\n"
-                    "Выберите действие:",
-                    reply_markup=get_broadcast_options()
+                    "Выберите время отправки:",
+                    reply_markup=get_broadcast_timing_options()
                 )
             
             elif state["step"] == "make_admin":
@@ -531,9 +530,27 @@ async def handle_broadcast_callbacks(callback: CallbackQuery):
     
     state = broadcast_state.user_states[user_id]
     
-    if action == "send_now":
+    if action == "with_buttons":
+        # Рассылка с кнопками ответа
+        state["with_buttons"] = True
+        state["step"] = "text"
+        await callback.message.edit_text(
+            "📤 Создание рассылки с кнопками\n\n"
+            "📝 Введите текст сообщения (можно использовать HTML форматирование и гиперссылки):"
+        )
+    
+    elif action == "text_only":
+        # Рассылка только текстом
+        state["with_buttons"] = False
+        state["step"] = "text"
+        await callback.message.edit_text(
+            "📤 Создание текстовой рассылки\n\n"
+            "📝 Введите текст сообщения (можно использовать HTML форматирование и гиперссылки):"
+        )
+    
+    elif action == "send_now":
         # Немедленная отправка
-        await send_broadcast(state["text"], callback.from_user.id)
+        await send_broadcast(state["text"], callback.from_user.id, state.get("with_buttons", True))
         del broadcast_state.user_states[user_id]
     
     elif action == "schedule":
@@ -551,7 +568,7 @@ async def handle_broadcast_callbacks(callback: CallbackQuery):
         await callback.message.edit_text("🔐 Панель администратора:", reply_markup=get_admin_menu())
 
 
-async def send_broadcast(text: str, admin_id: int, media_path: str = None, media_type: str = None):
+async def send_broadcast(text: str, admin_id: int, media_path: str = None, media_type: str = None, with_buttons: bool = True):
     """Отправка рассылки"""
     subscribers = await db.get_subscribers()
     message_id = await db.save_message(text, media_path, media_type)
@@ -565,13 +582,14 @@ async def send_broadcast(text: str, admin_id: int, media_path: str = None, media
                 await bot.send_photo(
                     chat_id=subscriber["telegram_id"],
                     photo=media_path,
-                    caption=text
+                    caption=text,
+                    reply_markup=get_response_buttons() if with_buttons else None
                 )
             else:
                 await bot.send_message(
                     chat_id=subscriber["telegram_id"],
                     text=text,
-                    reply_markup=get_response_buttons()
+                    reply_markup=get_response_buttons() if with_buttons else None
                 )
             
             await db.record_delivery(message_id, subscriber["id"])
@@ -607,7 +625,8 @@ async def check_scheduled_messages():
                 message["text"], 
                 settings.admin_id,
                 message.get("media_path"),
-                message.get("media_type")
+                message.get("media_type"),
+                with_buttons=True  # По умолчанию с кнопками для отложенных
             )
             
             # Обновляем статус на sent

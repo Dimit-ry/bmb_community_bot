@@ -59,6 +59,16 @@ def get_stats_menu() -> InlineKeyboardMarkup:
 def get_broadcast_options() -> InlineKeyboardMarkup:
     """Опции рассылки"""
     builder = InlineKeyboardBuilder()
+    builder.add(InlineKeyboardButton(text="📝 С кнопками ответа", callback_data="broadcast:with_buttons"))
+    builder.add(InlineKeyboardButton(text="📄 Только текст", callback_data="broadcast:text_only"))
+    builder.add(InlineKeyboardButton(text="❌ Отмена", callback_data="admin:back"))
+    builder.adjust(1)
+    return builder.as_markup()
+
+
+def get_broadcast_timing_options() -> InlineKeyboardMarkup:
+    """Опции времени рассылки"""
+    builder = InlineKeyboardBuilder()
     builder.add(InlineKeyboardButton(text="⏰ Отложенная отправка", callback_data="broadcast:schedule"))
     builder.add(InlineKeyboardButton(text="📤 Отправить сейчас", callback_data="broadcast:send_now"))
     builder.add(InlineKeyboardButton(text="❌ Отмена", callback_data="admin:back"))
