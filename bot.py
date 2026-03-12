@@ -61,7 +61,11 @@ async def cmd_start(message: Message):
     
     # Проверяем, является ли пользователь администратором
     is_admin = await db.is_admin(user_id)
-    print(f"DEBUG: user_id={user_id}, admin_id={settings.admin_id}, is_admin={is_admin}")
+    print(f"DEBUG: is_admin={is_admin}")
+    
+    # Получаем статус подписки
+    user_info = await db.get_user_by_telegram_id(user_id)
+    is_subscribed = user_info.get('is_subscribed', False) if user_info else False
     
     if is_admin:
         welcome_text = (
@@ -77,9 +81,6 @@ async def cmd_start(message: Message):
             f"Вы будете получать уведомления и сможете отметить свое присутствие.\n\n"
             f"Используйте меню ниже для управления подпиской."
         )
-        # Получаем статус подписки пользователя
-        user_info = await db.get_user_by_telegram_id(user_id)
-        is_subscribed = user_info.get('is_subscribed', False) if user_info else False
         await message.answer(welcome_text, reply_markup=get_user_menu(is_subscribed))
 
 
@@ -428,7 +429,7 @@ async def handle_text_messages(message: Message):
             await message.answer("🔐 Используйте команду /admin для доступа к панели управления.", reply_markup=get_admin_menu())
         else:
             # Обработка кнопок меню пользователя
-            if message.text == " Подписаться на рассылку":
+            if message.text == "🔔 Подписаться на рассылку":
                 new_status = await db.toggle_subscription(user_id)
                 if new_status:
                     await message.answer("✅ Вы подписались на рассылку", reply_markup=get_user_menu(True))
