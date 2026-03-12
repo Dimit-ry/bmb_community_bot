@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    build: .
+    container_name: telegram_reminder_bot
+    restart: unless-stopped
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - ADMIN_ID=${ADMIN_ID}
+      - DATABASE_PATH=/app/data/bot.db
+    volumes:
+      - ./data:/app/data
+      - ./media:/app/media
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    driver: bridge
