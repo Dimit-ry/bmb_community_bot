@@ -28,8 +28,7 @@ def get_user_menu(is_subscribed: bool = True) -> ReplyKeyboardMarkup:
     if is_subscribed:
         keyboard = ReplyKeyboardMarkup(
             keyboard=[
-                [KeyboardButton(text="🔔 Настройки уведомлений")],
-                [KeyboardButton(text="📊 Последние 10 событий")],
+                [KeyboardButton(text=" Последние 10 событий")],
                 [KeyboardButton(text="❌ Отписаться от рассылки")]
             ],
             resize_keyboard=True,
@@ -38,8 +37,7 @@ def get_user_menu(is_subscribed: bool = True) -> ReplyKeyboardMarkup:
     else:
         keyboard = ReplyKeyboardMarkup(
             keyboard=[
-                [KeyboardButton(text="🔔 Подписаться на рассылку")],
-                [KeyboardButton(text="📊 Последние 10 событий")]
+                [KeyboardButton(text="🔔 Подписаться на рассылку")]
             ],
             resize_keyboard=True,
             input_field_placeholder="Выберите действие..."

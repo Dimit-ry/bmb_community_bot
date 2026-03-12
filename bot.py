@@ -500,13 +500,6 @@ async def handle_text_messages(message: Message):
                 is_subscribed = user_info.get('is_subscribed', False) if user_info else False
                 await message.answer(text, parse_mode=None, reply_markup=get_user_menu(is_subscribed))
                 
-            elif message.text == "🔔 Настройки уведомлений":
-                user_info = await db.get_user_by_telegram_id(user_id)
-                if user_info and user_info.get('is_subscribed'):
-                    await message.answer("✅ Вы подписаны на рассылку уведомлений", reply_markup=get_user_menu(True))
-                else:
-                    await message.answer("❌ Вы не подписаны на рассылку. Нажмите 'Подписаться' для включения уведомлений.", reply_markup=get_user_menu(False))
-                    
             elif message.text == "🔔 Подписаться на рассылку":
                 new_status = await db.toggle_subscription(user_id)
                 if new_status:
