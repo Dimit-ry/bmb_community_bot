@@ -1,6 +1,6 @@
 import os
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import Optional
 
 
 class Settings(BaseSettings):
@@ -12,9 +12,10 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 
-# Явно загружаем .env файл
-from dotenv import load_dotenv
-load_dotenv()
+# Явно загружаем .env файл (только для локальной разработки)
+if os.path.exists(".env"):
+    from dotenv import load_dotenv
+    load_dotenv()
 
 settings = Settings()
 
