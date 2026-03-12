@@ -69,7 +69,7 @@ async def cmd_start(message: Message):
         print(f"DEBUG: is_admin={is_admin}")
         
         # Получаем статус подписки
-        user_info = await db.get_user_by_telegram_id(user_id)
+        user_info = await db.get_user_info_by_telegram_id(user_id)
         print(f"DEBUG: user_info={user_info}, type={type(user_info)}")
         
         if user_info and isinstance(user_info, dict):
@@ -125,7 +125,7 @@ async def handle_contact(message: Message):
             
             if success:
                 # Получаем актуальный статус подписки
-                user_info = await db.get_user_by_telegram_id(user_id)
+                user_info = await db.get_user_info_by_telegram_id(user_id)
                 if user_info and isinstance(user_info, dict):
                     is_subscribed = user_info.get('is_subscribed', False)
                 else:
@@ -508,7 +508,7 @@ async def handle_text_messages(message: Message):
                 
             else:
                 # Другие сообщения от пользователей
-                user_info = await db.get_user_by_telegram_id(user_id)
+                user_info = await db.get_user_info_by_telegram_id(user_id)
                 if user_info and isinstance(user_info, dict):
                     is_subscribed = user_info.get('is_subscribed', False)
                 else:

@@ -101,6 +101,17 @@ class Database:
                 result = await cursor.fetchone()
                 return result[0] if result else None
     
+    async def get_user_info_by_telegram_id(self, telegram_id: int) -> Optional[Dict[str, Any]]:
+        """Получение полной информации о пользователе по telegram_id"""
+        async with aiosqlite.connect(self.db_path) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                "SELECT * FROM users WHERE telegram_id = ?", 
+                (telegram_id,)
+            ) as cursor:
+                result = await cursor.fetchone()
+                return dict(result) if result else None
+    
     async def update_phone_number(self, telegram_id: int, phone_number: str) -> bool:
         """Обновление номера телефона пользователя"""
         async with aiosqlite.connect(self.db_path) as db:
