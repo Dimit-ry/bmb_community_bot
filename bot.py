@@ -492,6 +492,19 @@ async def handle_text_messages(message: Message):
             # Обработка кнопок меню пользователя
             if message.text == "🔔 Подписаться на рассылку":
                 print(f"DEBUG: Нажата кнопка подписки пользователем {user_id}")
+                
+                # Сначала проверяем, есть ли пользователь в базе
+                user_info = await db.get_user_info_by_telegram_id(user_id)
+                if not user_info:
+                    print(f"DEBUG: Пользователь {user_id} не найден, добавляем в базу")
+                    await db.add_user(
+                        user_id, 
+                        message.from_user.username or "", 
+                        message.from_user.first_name or "",
+                        message.from_user.last_name or ""
+                    )
+                    print(f"DEBUG: Пользователь {user_id} добавлен в базу")
+                
                 new_status = await db.toggle_subscription(user_id)
                 print(f"DEBUG: Результат toggle_subscription: {new_status}")
                 
@@ -511,6 +524,18 @@ async def handle_text_messages(message: Message):
                     
             elif message.text == "❌ Отписаться от рассылки":
                 print(f"DEBUG: Нажата кнопка ОТПИСКИ пользователем {user_id}")
+                
+                # Сначала проверяем, есть ли пользователь в базе
+                user_info = await db.get_user_info_by_telegram_id(user_id)
+                if not user_info:
+                    print(f"DEBUG: Пользователь {user_id} не найден, добавляем в базу")
+                    await db.add_user(
+                        user_id, 
+                        message.from_user.username or "", 
+                        message.from_user.first_name or "",
+                        message.from_user.last_name or ""
+                    )
+                    print(f"DEBUG: Пользователь {user_id} добавлен в базу")
                 
                 # Сначала получаем статус ДО изменения
                 user_info_before = await db.get_user_info_by_telegram_id(user_id)
