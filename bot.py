@@ -501,10 +501,11 @@ async def handle_text_messages(message: Message):
                     
             elif message.text == "❌ Отписаться от рассылки":
                 new_status = await db.toggle_subscription(user_id)
-                if not new_status:
-                    await message.answer("❌ Вы отписались от рассылки", reply_markup=get_user_menu(False))
-                else:
-                    await message.answer("✅ Вы остались подписаны", reply_markup=get_user_menu(True))
+                # new_status = False если отписались, True если остались подписаны
+                await message.answer(
+                    "❌ Вы отписались от рассылки" if not new_status else "✅ Вы остались подписаны",
+                    reply_markup=get_user_menu(not new_status)  # Показываем противоположный статус
+                )
                 
             else:
                 # Другие сообщения от пользователей
